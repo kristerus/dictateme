@@ -9,7 +9,7 @@ description = "System-wide voice dictation for Windows with local STT and LLM pr
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
-authors = [{ name = "DictateMe Contributors" }]
+authors = [{ name = "Kristian Dhimitri" }]
 keywords = ["dictation", "voice", "speech-to-text", "whisper", "windows"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
