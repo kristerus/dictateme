@@ -38,3 +38,6 @@ config.toml
 *.onnx
 *.bin
 *.pt
+target/
+node_modules/
+app/src-tauri/target/

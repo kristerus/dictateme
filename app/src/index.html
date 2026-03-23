@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DictateMe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: rgba(14, 14, 18, 0.94);
+    --surface: rgba(28, 28, 35, 0.8);
+    --border: rgba(255, 255, 255, 0.06);
+    --border-active: rgba(255, 186, 8, 0.25);
+    --text: #F2F0ED;
+    --text-sec: #9A9AA6;
+    --text-muted: #5A5A68;
+    --accent: #FFBA08;
+    --accent-glow: rgba(255, 186, 8, 0.12);
+    --red: #FF5F57;
+    --green: #2DD4BF;
+    --orange: #FF9F43;
+    --radius: 16px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: 'Outfit', system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body { padding: 8px; }
+
+  .overlay {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(40px) saturate(1.6);
+    box-shadow:
+      0 24px 80px rgba(0,0,0,0.45),
+      0 0 0 1px rgba(255,255,255,0.02) inset,
+      0 1px 0 rgba(255,255,255,0.04) inset;
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition: opacity 0.3s cubic-bezier(0.16,1,0.3,1),
+                transform 0.3s cubic-bezier(0.16,1,0.3,1);
+    overflow: hidden;
+  }
+  .overlay.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .overlay.hiding {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transition-duration: 0.2s;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-muted);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .dot.recording {
+    background: var(--red);
+    box-shadow: 0 0 8px rgba(255,95,87,0.3);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .dot.processing {
+    background: var(--orange);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .dot.ready {
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(45,212,191,0.2);
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity:1; }
+    50% { transform: scale(1.4); opacity:0.6; }
+  }
+
+  .status {
+    font-size: 13px; font-weight: 500;
+    color: var(--text-sec);
+    transition: color 0.3s;
+  }
+  .status.recording { color: var(--red); }
+  .status.processing { color: var(--orange); }
+  .status.ready { color: var(--green); }
+
+  .timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .waveform {
+    display: flex; align-items: center; justify-content: center;
+    gap: 2px; height: 52px; padding: 8px 18px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .waveform.active { opacity: 1; }
+  .waveform .bar {
+    width: 3px; border-radius: 2px;
+    background: var(--accent);
+    height: 4px; transition: height 0.08s ease-out;
+    opacity: 0.6;
+  }
+
+  .text-area {
+    padding: 16px 18px;
+    min-height: 36px; max-height: 180px;
+    overflow-y: auto;
+  }
+  .text-area::-webkit-scrollbar { width: 3px; }
+  .text-area::-webkit-scrollbar-track { background: transparent; }
+  .text-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .text {
+    font-size: 14px; line-height: 1.65; color: var(--text);
+    font-weight: 400; letter-spacing: -0.005em;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.4s, transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .text.visible { opacity: 1; transform: translateY(0); }
+  .placeholder { color: var(--text-muted); font-style: italic; font-weight: 300; }
+  .cursor {
+    display: inline-block; width: 2px; height: 1em;
+    background: var(--accent); margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .progress-track {
+    height: 2px; background: rgba(255,255,255,0.03);
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 0 1px 1px 0;
+  }
+
+  .formats {
+    display: flex; gap: 5px; padding: 10px 18px 14px;
+    flex-wrap: wrap; border-top: 1px solid var(--border);
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.3s 0.1s, transform 0.3s 0.1s cubic-bezier(0.16,1,0.3,1);
+  }
+  .formats.visible { opacity: 1; transform: translateY(0); }
+  .pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    font-size: 11px; font-weight: 500;
+    color: var(--text-sec); cursor: default;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .pill .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    color: var(--accent);
+  }
+  .pill.active, .pill:hover {
+    border-color: var(--border-active);
+    background: var(--accent-glow);
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay">
+  <div class="header">
+    <div class="header-left">
+      <div class="dot" id="dot"></div>
+      <span class="status" id="status">Ready</span>
+    </div>
+    <span class="timer" id="timer"></span>
+  </div>
+
+  <div class="waveform" id="waveform"></div>
+
+  <div class="text-area">
+    <div class="text visible" id="text">
+      <span class="placeholder">Hold Ctrl+Win and speak...</span>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progress"></div>
+  </div>
+
+  <div class="formats" id="formats">
+    <div class="pill active"><span class="k">1</span>As-is</div>
+    <div class="pill"><span class="k">2</span>Formal</div>
+    <div class="pill"><span class="k">3</span>Casual</div>
+    <div class="pill"><span class="k">4</span>Email</div>
+    <div class="pill"><span class="k">5</span>Bullets</div>
+    <div class="pill"><span class="k">6</span>Code</div>
+    <div class="pill"><span class="k">7</span>AI</div>
+    <div class="pill"><span class="k">8</span>Slack</div>
+  </div>
+</div>
+
+<script>
+const { invoke } = window.__TAURI__.core;
+const { listen } = window.__TAURI__.event;
+
+const overlay = document.getElementById('overlay');
+const dot = document.getElementById('dot');
+const status = document.getElementById('status');
+const timer = document.getElementById('timer');
+const waveform = document.getElementById('waveform');
+const text = document.getElementById('text');
+const formats = document.getElementById('formats');
+const progress = document.getElementById('progress');
+
+// ── Waveform bars ──────────────────────────────────
+const BARS = 50;
+const bars = [];
+for (let i = 0; i < BARS; i++) {
+  const b = document.createElement('div');
+  b.className = 'bar';
+  waveform.appendChild(b);
+  bars.push(b);
+}
+
+let waveActive = false, waveId = null;
+function animWave() {
+  if (!waveActive) return;
+  const t = performance.now() / 1000;
+  for (let i = 0; i < BARS; i++) {
+    const c = Math.abs(i - BARS/2) / (BARS/2);
+    const w = Math.sin(t*3+i*0.25)*0.5+0.5;
+    const w2 = Math.sin(t*5.3+i*0.18)*0.3+0.5;
+    const a = (1-c*0.6)*(w*0.6+w2*0.4);
+    bars[i].style.height = (3+a*32)+'px';
+    bars[i].style.opacity = 0.3+a*0.55;
+  }
+  waveId = requestAnimationFrame(animWave);
+}
+function startWave() { waveActive=true; waveform.classList.add('active'); animWave(); }
+function stopWave() { waveActive=false; waveform.classList.remove('active'); if(waveId) cancelAnimationFrame(waveId); }
+
+// ── Timer ──────────────────────────────────────────
+let timerStart=0, timerInt=null;
+function startTimer() {
+  timerStart=Date.now();
+  timerInt=setInterval(()=>{
+    const s=Math.floor((Date.now()-timerStart)/1000);
+    timer.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  },200);
+}
+function stopTimer() { if(timerInt) clearInterval(timerInt); timerInt=null; timer.textContent=''; }
+
+// ── Listen for Tauri events from Rust backend ──────
+listen('dictation-state', (event) => {
+  const { state, data } = event.payload;
+
+  if (state === 'recording') {
+    overlay.classList.remove('hiding');
+    overlay.classList.add('visible');
+    dot.className = 'dot recording';
+    status.className = 'status recording';
+    status.textContent = 'Recording';
+    text.innerHTML = '<span class="placeholder">Speak now...<span class="cursor"></span></span>';
+    text.classList.add('visible');
+    formats.classList.remove('visible');
+    progress.style.transition = 'none';
+    progress.style.width = '0%';
+    startWave();
+    startTimer();
+  }
+  else if (state === 'processing') {
+    dot.className = 'dot processing';
+    status.className = 'status processing';
+    status.textContent = 'Processing';
+    stopWave();
+    stopTimer();
+  }
+  else if (state === 'ready') {
+    dot.className = 'dot ready';
+    status.className = 'status ready';
+    status.textContent = 'Ready';
+    stopWave(); stopTimer();
+    text.textContent = data.text || '';
+    text.classList.add('visible');
+    if (data.show_formats) {
+      formats.classList.add('visible');
+    }
+    if (data.auto_insert_ms > 0) {
+      progress.style.transition = 'none';
+      progress.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        progress.style.transition = 'width '+data.auto_insert_ms+'ms linear';
+        progress.style.width = '100%';
+      }));
+    }
+  }
+  else if (state === 'hidden') {
+    overlay.classList.add('hiding');
+    overlay.classList.remove('visible');
+    stopWave(); stopTimer();
+  }
+});
+
+// ── Format pill clicks ─────────────────────────────
+document.querySelectorAll('.pill').forEach((pill, i) => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach((p,j) => p.classList.toggle('active', j===i));
+    invoke('select_format', { index: i });
+  });
+});
+</script>
+</body>
+</html>

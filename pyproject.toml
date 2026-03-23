@@ -60,6 +60,7 @@ dev = [
 
 [project.scripts]
 dictateme = "dictateme.__main__:main"
+dictateme-server = "dictateme.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dictateme"]
