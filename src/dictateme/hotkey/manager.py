@@ -1,12 +1,16 @@
-"""Global hotkey registration and management.
+"""Cross-platform global hotkey registration and management.
 
-Uses the `keyboard` library for system-wide hotkey hooks.
-Supports both hold-to-talk and toggle modes.
+Uses `pynput` for cross-platform global keyboard hooks.
+Supports both hold-to-talk and toggle modes on Windows, macOS, and Linux.
+
+Note: On Linux, pynput requires the user to be in the `input` group
+or to run with elevated privileges for global keyboard monitoring.
 """
 
 from __future__ import annotations
 
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from ..core.events import Event, EventType
@@ -19,9 +23,19 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Map key names to pynput Key objects
+_SPECIAL_KEYS: dict[str, str] = {
+    "ctrl": "ctrl_l",
+    "shift": "shift",
+    "alt": "alt_l",
+    "windows": "cmd" if sys.platform == "darwin" else "cmd_l",
+    "cmd": "cmd" if sys.platform == "darwin" else "cmd_l",
+    "escape": "esc",
+}
+
 
 class HotkeyManager:
-    """Manages global hotkey registration and event dispatch.
+    """Cross-platform global hotkey manager using pynput.
 
     In HOLD mode: emits HOTKEY_PRESSED on key down, HOTKEY_RELEASED on key up.
     In TOGGLE mode: emits HOTKEY_PRESSED on each press (toggles recording).
@@ -33,43 +47,27 @@ class HotkeyManager:
         self._mode = HotkeyMode(config.mode)
         self._key_combo = normalize_key_combo(config.key_combo)
         self._cancel_key = config.cancel_key
+        self._listener = None
         self._active = False
         self._toggled_on = False
-        self._hooks: list = []
+
+        # Parse the key combo into modifier set + trigger key
+        self._modifiers, self._trigger_key = self._parse_combo(self._key_combo)
+        self._cancel_pynput_key = self._resolve_key(self._cancel_key)
+        self._pressed_keys: set = set()
 
     def start(self) -> None:
         """Register global hotkeys. Call once at startup."""
-        import keyboard
+        from pynput import keyboard
 
-        if self._mode == HotkeyMode.HOLD:
-            # For hold mode, we need key_down and key_up events
-            # keyboard library's hook is more suitable for this
-            keyboard.on_press_key(
-                self._get_trigger_key(),
-                self._on_key_down,
-                suppress=False,
-            )
-            keyboard.on_release_key(
-                self._get_trigger_key(),
-                self._on_key_up,
-                suppress=False,
-            )
-        else:
-            # Toggle mode: single press toggles
-            keyboard.add_hotkey(
-                self._key_combo,
-                self._on_toggle_press,
-                suppress=False,
-            )
-
-        # Cancel key always active
-        keyboard.add_hotkey(
-            self._cancel_key,
-            self._on_cancel,
-            suppress=False,
+        self._listener = keyboard.Listener(
+            on_press=self._on_press,
+            on_release=self._on_release,
         )
-
+        self._listener.daemon = True
+        self._listener.start()
         self._active = True
+
         logger.info(
             "Hotkey registered: %s (mode=%s, cancel=%s)",
             self._key_combo, self._mode.value, self._cancel_key,
@@ -77,56 +75,104 @@ class HotkeyManager:
 
     def stop(self) -> None:
         """Unregister all hotkeys."""
-        import keyboard
-
-        keyboard.unhook_all()
+        if self._listener:
+            self._listener.stop()
+            self._listener = None
         self._active = False
         logger.info("Hotkeys unregistered")
 
-    def _get_trigger_key(self) -> str:
-        """Get the primary trigger key from the combo.
+    def _parse_combo(self, combo: str) -> tuple[set[str], str]:
+        """Parse 'ctrl+windows' into ({ctrl_l, cmd_l}, 'cmd_l')."""
+        parts = combo.split("+")
+        if len(parts) == 1:
+            return set(), self._resolve_key(parts[0])
 
-        For hold mode with modifiers (e.g., ctrl+windows), we hook
-        the last key in the combo and check modifiers manually.
-        """
-        parts = self._key_combo.split("+")
-        return parts[-1] if parts else self._key_combo
+        modifiers = set()
+        for part in parts[:-1]:
+            modifiers.add(self._resolve_key(part))
+        trigger = self._resolve_key(parts[-1])
+        return modifiers, trigger
 
-    def _check_modifiers(self) -> bool:
-        """Check if the required modifier keys are currently held."""
-        import keyboard
+    def _resolve_key(self, name: str) -> str:
+        """Map a key name to a pynput-compatible identifier."""
+        name = name.lower().strip()
+        return _SPECIAL_KEYS.get(name, name)
 
-        parts = self._key_combo.split("+")
-        modifiers = parts[:-1]  # All except the trigger key
-        for mod in modifiers:
-            if not keyboard.is_pressed(mod):
+    def _key_to_str(self, key: object) -> str:
+        """Convert a pynput key event to a comparable string."""
+        from pynput import keyboard
+
+        if isinstance(key, keyboard.Key):
+            return key.name
+        elif hasattr(key, "char") and key.char:
+            return key.char.lower()
+        return str(key)
+
+    def _is_trigger(self, key_str: str) -> bool:
+        """Check if the given key matches the trigger key."""
+        # Handle aliases
+        trigger = self._trigger_key
+        aliases = {
+            "cmd_l": {"cmd_l", "cmd", "cmd_r"},
+            "ctrl_l": {"ctrl_l", "ctrl", "ctrl_r"},
+            "alt_l": {"alt_l", "alt", "alt_r"},
+            "shift": {"shift", "shift_l", "shift_r"},
+        }
+        if trigger in aliases:
+            return key_str in aliases[trigger]
+        return key_str == trigger
+
+    def _modifiers_held(self) -> bool:
+        """Check if all required modifier keys are currently held."""
+        for mod in self._modifiers:
+            aliases = {
+                "ctrl_l": {"ctrl_l", "ctrl", "ctrl_r"},
+                "alt_l": {"alt_l", "alt", "alt_r"},
+                "cmd_l": {"cmd_l", "cmd", "cmd_r"},
+                "shift": {"shift", "shift_l", "shift_r"},
+            }
+            expected = aliases.get(mod, {mod})
+            if not expected & self._pressed_keys:
                 return False
         return True
 
-    def _on_key_down(self, event: object) -> None:
-        """Handle key down in hold mode."""
-        if not self._check_modifiers():
+    def _on_press(self, key: object) -> None:
+        key_str = self._key_to_str(key)
+        self._pressed_keys.add(key_str)
+
+        # Cancel key
+        if key_str == self._cancel_pynput_key or key_str == "esc":
+            if self._toggled_on:
+                self._toggled_on = False
+            self._event_bus.emit(Event(type=EventType.CANCEL_PRESSED))
             return
-        if not self._toggled_on:
-            self._toggled_on = True
-            self._event_bus.emit(Event(type=EventType.HOTKEY_PRESSED))
 
-    def _on_key_up(self, event: object) -> None:
-        """Handle key up in hold mode."""
-        if self._toggled_on:
-            self._toggled_on = False
-            self._event_bus.emit(Event(type=EventType.HOTKEY_RELEASED))
+        # Check trigger
+        if not self._is_trigger(key_str):
+            return
+        if not self._modifiers_held():
+            return
 
-    def _on_toggle_press(self) -> None:
-        """Handle press in toggle mode."""
-        self._toggled_on = not self._toggled_on
-        if self._toggled_on:
-            self._event_bus.emit(Event(type=EventType.HOTKEY_PRESSED))
+        if self._mode == HotkeyMode.HOLD:
+            if not self._toggled_on:
+                self._toggled_on = True
+                self._event_bus.emit(Event(type=EventType.HOTKEY_PRESSED))
         else:
-            self._event_bus.emit(Event(type=EventType.HOTKEY_RELEASED))
+            # Toggle mode
+            self._toggled_on = not self._toggled_on
+            if self._toggled_on:
+                self._event_bus.emit(Event(type=EventType.HOTKEY_PRESSED))
+            else:
+                self._event_bus.emit(Event(type=EventType.HOTKEY_RELEASED))
 
-    def _on_cancel(self) -> None:
-        """Handle cancel key press."""
-        if self._toggled_on:
-            self._toggled_on = False
-        self._event_bus.emit(Event(type=EventType.CANCEL_PRESSED))
+    def _on_release(self, key: object) -> None:
+        key_str = self._key_to_str(key)
+        self._pressed_keys.discard(key_str)
+
+        if self._mode == HotkeyMode.HOLD:
+            # Release any key in the combo → stop recording
+            if self._toggled_on and (
+                self._is_trigger(key_str) or not self._modifiers_held()
+            ):
+                self._toggled_on = False
+                self._event_bus.emit(Event(type=EventType.HOTKEY_RELEASED))

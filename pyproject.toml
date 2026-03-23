@@ -5,15 +5,17 @@ build-backend = "hatchling.build"
 [project]
 name = "dictateme"
 version = "0.1.0"
-description = "System-wide voice dictation for Windows with local STT and LLM processing"
+description = "System-wide voice dictation with local STT and LLM processing"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
 authors = [{ name = "Kristian Dhimitri" }]
-keywords = ["dictation", "voice", "speech-to-text", "whisper", "windows"]
+keywords = ["dictation", "voice", "speech-to-text", "whisper", "cross-platform"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3.12",
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
@@ -28,12 +30,13 @@ dependencies = [
     "sounddevice>=0.5.0",
     "numpy>=1.26",
     "litellm>=1.50",
-    "keyboard>=0.13.5",
+    "pynput>=1.7.6",
     "pystray>=0.19.5",
     "Pillow>=10.0",
-    "pywin32>=306",
     "psutil>=5.9",
-    "pywebview>=5.0",
+    # Platform-specific
+    "pywin32>=306; sys_platform == 'win32'",
+    "keyboard>=0.13.5; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]

@@ -123,24 +123,21 @@ class WebviewOverlay:
     def _position_window(self) -> None:
         if not self._window:
             return
-        import ctypes
+
+        from ..utils.platform import get_cursor_pos, get_screen_size
 
         pos = self._ui_config.overlay_position
         width = self._ui_config.overlay_width + 16
 
         if pos == "cursor":
-            class POINT(ctypes.Structure):
-                _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
-            pt = POINT()
-            ctypes.windll.user32.GetCursorPos(ctypes.byref(pt))
-            x, y = pt.x + 20, pt.y + 20
+            cx, cy = get_cursor_pos()
+            x, y = cx + 20, cy + 20
         elif pos == "center":
-            sw = ctypes.windll.user32.GetSystemMetrics(0)
-            sh = ctypes.windll.user32.GetSystemMetrics(1)
+            sw, sh = get_screen_size()
             x = (sw - width) // 2
             y = sh // 3
         elif pos == "top_right":
-            sw = ctypes.windll.user32.GetSystemMetrics(0)
+            sw, _ = get_screen_size()
             x = sw - width - 20
             y = 40
         else:
