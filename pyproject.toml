@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dictateme"
+version = "0.1.0"
+description = "System-wide voice dictation for Windows with local STT and LLM processing"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "DictateMe Contributors" }]
+keywords = ["dictation", "voice", "speech-to-text", "whisper", "windows"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+
+[project.urls]
+Homepage = "https://dictateme.org"
+Repository = "https://github.com/kristerus/dictateme"
+Issues = "https://github.com/kristerus/dictateme/issues"
+
+dependencies = [
+    "faster-whisper>=1.1.0",
+    "sounddevice>=0.5.0",
+    "numpy>=1.26",
+    "litellm>=1.50",
+    "keyboard>=0.13.5",
+    "pystray>=0.19.5",
+    "Pillow>=10.0",
+    "pywin32>=306",
+    "psutil>=5.9",
+    "pywebview>=5.0",
+]
+
+[project.optional-dependencies]
+# Install with: pip install dictateme[cuda]
+cuda = [
+    "torch>=2.2",
+    "silero-vad>=5.1",
+]
+# CPU-only mode: uses ONNX VAD, no torch dependency
+cpu = [
+    "onnxruntime>=1.17",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+    "pyinstaller>=6.5",
+]
+
+[project.scripts]
+dictateme = "dictateme.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dictateme"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "TCH"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

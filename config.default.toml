@@ -1,0 +1,95 @@
+# DictateMe Default Configuration
+# Copy this to ~/.dictateme/config.toml and customize.
+
+[general]
+language = "en"
+start_minimized = true
+auto_start_with_windows = false
+log_level = "INFO"
+# Maximum recording duration in seconds (safety limit)
+max_recording_seconds = 60
+
+[hotkey]
+# "hold" = push-to-talk (hold key to record, release to stop)
+# "toggle" = press once to start, press again to stop
+mode = "hold"
+key_combo = "ctrl+windows"
+cancel_key = "escape"
+
+[audio]
+# "default" uses system default mic, or specify device name/index
+device = "default"
+sample_rate = 16000
+# VAD confidence threshold (0.0-1.0, higher = stricter speech detection)
+vad_threshold = 0.5
+# In toggle mode: how many ms of silence before auto-stopping
+silence_duration_ms = 800
+
+[stt]
+engine = "faster-whisper"
+# Models: tiny.en | small.en | medium.en | large-v3
+# Non-English: tiny | small | medium | large-v3
+model = "small.en"
+# "auto" picks CUDA if available, else CPU
+device = "auto"
+# float16 (GPU default) | int8 (smaller/faster) | float32 (CPU default)
+compute_type = "float16"
+# Beam size for decoding (1 = greedy, 5 = default, higher = slower but more accurate)
+beam_size = 5
+
+[llm]
+enabled = true
+# Provider: ollama | openai | anthropic | groq | azure | custom
+provider = "ollama"
+
+[llm.ollama]
+base_url = "http://localhost:11434"
+model = "llama3.2:3b"
+
+[llm.openai]
+api_key = ""
+model = "gpt-4o-mini"
+
+[llm.anthropic]
+api_key = ""
+model = "claude-sonnet-4-20250514"
+
+[llm.groq]
+api_key = ""
+model = "llama-3.1-8b-instant"
+
+[llm.custom]
+# Any OpenAI-compatible endpoint
+api_base = ""
+api_key = ""
+model = ""
+
+[formatting]
+# Milliseconds to wait before auto-inserting (0 = instant, no format menu)
+auto_insert_delay_ms = 1500
+# Show floating preview of processed text
+show_preview = true
+default_format = "as_is"
+
+[formatting.presets]
+formal = "Rewrite in a formal, professional tone. Preserve all meaning."
+casual = "Rewrite in a casual, friendly tone. Keep it natural."
+email = "Format as a professional email body. Add appropriate greeting/closing if missing."
+bullet_points = "Convert into concise bullet points. Use - prefix."
+code_comment = "Rewrite as clear code comments. Use // prefix for each line."
+ai_prompt = "Rewrite as a clear, detailed prompt for an AI assistant."
+slack_message = "Rewrite as a concise Slack message. Keep it brief and direct."
+
+[insertion]
+# clipboard_paste | sendinput | auto
+method = "clipboard_paste"
+restore_clipboard = true
+clipboard_restore_delay_ms = 100
+
+[ui]
+# "cursor" = near mouse cursor, "center" = screen center, "top_right" = top-right corner
+overlay_position = "cursor"
+overlay_opacity = 0.9
+show_recording_indicator = true
+# Overlay width in pixels
+overlay_width = 400
