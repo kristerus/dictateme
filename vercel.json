@@ -1,0 +1,19 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "website",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/download/windows",
+      "destination": "https://github.com/kristerus/dictateme/releases/latest/download/DictateMe_0.1.0_x64-setup.exe"
+    },
+    {
+      "source": "/download/macos",
+      "destination": "https://github.com/kristerus/dictateme/releases/latest/download/DictateMe_0.1.0_aarch64.dmg"
+    },
+    {
+      "source": "/download/linux",
+      "destination": "https://github.com/kristerus/dictateme/releases/latest/download/DictateMe_0.1.0_amd64.deb"
+    }
+  ]
+}
