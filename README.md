@@ -190,7 +190,7 @@ Leave `llm.enabled = false`. Raw Whisper transcription is already good for most 
 │  ├── Audio Capture (sounddevice) │
 │  ├── VAD (silero-vad)            │
 │  ├── STT (faster-whisper)        │
-│  ├── LLM Cleanup (litellm)      │
+│  ├── LLM Cleanup (direct API)   │
 │  └── Text Insertion (clipboard)  │
 └──────────────────────────────────┘
 ```
