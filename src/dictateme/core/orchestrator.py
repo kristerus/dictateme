@@ -22,7 +22,7 @@ from .types import AppState, ProcessingContext, TextFormat
 if TYPE_CHECKING:
     from ..audio.capture import AudioCapture
     from ..insertion.inserter import TextInserter
-    from ..llm.processor import LiteLLMProcessor
+    from ..llm.processor import LLMProcessor
     from ..stt.faster_whisper import FasterWhisperEngine
     from ..ui.overlay import Overlay
     from ..ui.tray import SystemTray
@@ -59,7 +59,7 @@ class Orchestrator:
         event_bus: EventBus,
         audio_capture: AudioCapture,
         stt_engine: FasterWhisperEngine,
-        llm_processor: LiteLLMProcessor,
+        llm_processor: LLMProcessor,
         text_inserter: TextInserter,
         tray: SystemTray,
         overlay: Overlay,

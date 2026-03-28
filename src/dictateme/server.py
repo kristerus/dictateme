@@ -46,7 +46,7 @@ from .core.event_bus import EventBus
 from .core.types import ProcessingContext, TextFormat
 from .insertion.context import get_active_window
 from .insertion.inserter import TextInserter
-from .llm.processor import LiteLLMProcessor
+from .llm.processor import LLMProcessor
 from .audio.devices import list_input_devices
 from .stt.faster_whisper import FasterWhisperEngine
 
@@ -68,7 +68,7 @@ class _AppState:
         self.event_bus: EventBus | None = None
         self.audio: AudioCapture | None = None
         self.stt: FasterWhisperEngine | None = None
-        self.llm: LiteLLMProcessor | None = None
+        self.llm: LLMProcessor | None = None
         self.inserter: TextInserter | None = None
         self.model_loaded = False
         self.model_loading = False
@@ -488,7 +488,7 @@ def _initialise_components() -> None:
     if cfg.llm.enabled:
         logger.info("Creating LLM processor (provider=%s)...", cfg.llm.provider)
         try:
-            _state.llm = LiteLLMProcessor(config=cfg)
+            _state.llm = LLMProcessor(config=cfg)
         except Exception:
             logger.exception("LLM processor init failed; LLM features disabled")
             _state.llm = None

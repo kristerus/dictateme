@@ -18,7 +18,7 @@ from .core.event_bus import EventBus
 from .core.orchestrator import Orchestrator
 from .hotkey.manager import HotkeyManager
 from .insertion.inserter import TextInserter
-from .llm.processor import LiteLLMProcessor
+from .llm.processor import LLMProcessor
 from .stt.faster_whisper import FasterWhisperEngine
 from .ui.overlay import create_overlay, has_webview
 from .ui.tray import SystemTray
@@ -38,7 +38,7 @@ class DictateApp:
         self._hotkey_manager: HotkeyManager | None = None
         self._audio_capture: AudioCapture | None = None
         self._stt_engine: FasterWhisperEngine | None = None
-        self._llm_processor: LiteLLMProcessor | None = None
+        self._llm_processor: LLMProcessor | None = None
         self._text_inserter: TextInserter | None = None
         self._tray: SystemTray | None = None
         self._overlay = None
@@ -67,7 +67,7 @@ class DictateApp:
         self._stt_engine = FasterWhisperEngine(
             beam_size=self._config.stt.beam_size,
         )
-        self._llm_processor = LiteLLMProcessor(config=self._config)
+        self._llm_processor = LLMProcessor(config=self._config)
         self._text_inserter = TextInserter(config=self._config.insertion)
         self._tray = SystemTray(on_quit=self._shutdown)
 

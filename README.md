@@ -227,5 +227,5 @@ If DictateMe is useful to you, consider giving it a star - it helps others disco
 ---
 
 <p align="center">
-  Built with <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a>, <a href="https://tauri.app">Tauri</a>, and <a href="https://github.com/BerriAI/litellm">litellm</a>.
+  Built with <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a> and <a href="https://tauri.app">Tauri</a>.
 </p>
