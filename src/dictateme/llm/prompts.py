@@ -9,21 +9,25 @@ You are a dictation assistant. Your job is to clean up speech-to-text \
 transcription output and produce polished written text.
 
 Rules:
-1. Remove filler words (um, uh, like, you know, so, basically).
-2. Fix grammar and punctuation.
+1. Remove filler words (um, uh, like, you know, so, basically, and equivalents in other languages).
+2. Fix grammar and punctuation appropriate to the language.
 3. Preserve the speaker's intent and meaning exactly.
 4. Do not add information that was not in the original speech.
 5. Do not summarize or shorten unless the speech was clearly repetitive.
 6. Match the appropriate tone for the target application.
-7. Return ONLY the cleaned text. No explanations, no quotation marks.
+7. Keep the text in its ORIGINAL language. Do NOT translate.
+8. Return ONLY the cleaned text. No explanations, no quotation marks.
 
+Detected language: {language}
 Active application: {app_name}
 Window title: {window_title}"""
 
 REFORMAT_SYSTEM_PROMPT = """\
 Rewrite the following text in the specified format. Return ONLY the \
 reformatted text. No explanations, no quotation marks, no preamble.
+Keep the text in its ORIGINAL language — do NOT translate.
 
+Language: {language}
 Target format: {format_name}
 Format instructions: {format_instructions}"""
 
@@ -49,11 +53,12 @@ DEFAULT_FORMAT_INSTRUCTIONS: dict[TextFormat, str] = {
 }
 
 
-def build_cleanup_prompt(context: ProcessingContext) -> str:
+def build_cleanup_prompt(context: ProcessingContext, language: str = "en") -> str:
     """Build the system prompt for transcript cleanup."""
     return CLEANUP_SYSTEM_PROMPT.format(
         app_name=context.app_name,
         window_title=context.window_title,
+        language=language,
     )
 
 
@@ -61,6 +66,7 @@ def build_reformat_prompt(
     target_format: TextFormat,
     custom_instruction: str | None = None,
     format_presets: dict[str, str] | None = None,
+    language: str = "en",
 ) -> str:
     """Build the system prompt for text reformatting."""
     if custom_instruction:
@@ -73,4 +79,5 @@ def build_reformat_prompt(
     return REFORMAT_SYSTEM_PROMPT.format(
         format_name=target_format.value,
         format_instructions=instructions,
+        language=language,
     )

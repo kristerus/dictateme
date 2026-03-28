@@ -30,19 +30,21 @@ class LiteLLMProcessor:
         self,
         raw_transcript: str,
         context: ProcessingContext,
+        language: str = "en",
     ) -> ProcessedText:
         """Clean up raw transcription: remove fillers, fix grammar, punctuate.
 
         Args:
             raw_transcript: Raw text from STT engine.
             context: Information about the active application.
+            language: Detected language code (e.g. "en", "de", "ja").
 
         Returns:
             ProcessedText with cleaned text.
         """
         import litellm
 
-        system_prompt = build_cleanup_prompt(context)
+        system_prompt = build_cleanup_prompt(context, language=language)
 
         t0 = time.perf_counter()
         response = await litellm.acompletion(
@@ -73,6 +75,7 @@ class LiteLLMProcessor:
         target_format: TextFormat,
         context: ProcessingContext,
         custom_instruction: str | None = None,
+        language: str = "en",
     ) -> ProcessedText:
         """Reformat already-cleaned text into a specific style.
 
@@ -81,6 +84,7 @@ class LiteLLMProcessor:
             target_format: Target format preset.
             context: Active application context.
             custom_instruction: Optional custom formatting instruction.
+            language: Language code for the text.
 
         Returns:
             ProcessedText with reformatted text.
@@ -99,6 +103,7 @@ class LiteLLMProcessor:
             target_format,
             custom_instruction=custom_instruction,
             format_presets=self._config.formatting.presets,
+            language=language,
         )
 
         t0 = time.perf_counter()

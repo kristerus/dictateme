@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DictateMe</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg: #0E0E12;
+    --surface: #1C1C23;
+    --surface-2: #252530;
+    --surface-3: #2E2E3A;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.12);
+    --text: #F2F0ED;
+    --text-sec: #9A9AA6;
+    --text-muted: #5A5A68;
+    --accent: #FFBA08;
+    --accent-hover: #FFD060;
+    --accent-dim: rgba(255, 186, 8, 0.12);
+    --accent-glow: rgba(255, 186, 8, 0.08);
+    --red: #FF5F57;
+    --green: #2DD4BF;
+    --orange: #FF9F43;
+    --radius: 12px;
+    --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Cascadia Code', Consolas, 'SF Mono', monospace;
+}
+
+html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--font-sans);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ──────────────────────────────────────── */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* ── Tab Bar ─────────────────────────────────────── */
+.tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    user-select: none;
+}
+.tab:hover { color: var(--text-sec); }
+.tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+.tab-spacer { flex: 1; }
+.tab-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding-right: 4px;
+}
+.tab-status .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+.tab-status .dot.ok { background: var(--green); }
+.tab-status .dot.loading { background: var(--orange); animation: pulse 1.2s ease-in-out infinite; }
+.tab-status .dot.error { background: var(--red); }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ── Tab Content ─────────────────────────────────── */
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+    display: none;
+}
+.tab-content.active { display: block; }
+.tab-content::-webkit-scrollbar { width: 4px; }
+.tab-content::-webkit-scrollbar-track { background: transparent; }
+.tab-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Dashboard ───────────────────────────────────── */
+.dashboard {
+    padding: 40px 32px;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.welcome {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.welcome-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto 20px;
+    border-radius: 16px;
+    background: var(--accent-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.welcome-icon .bars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+}
+.welcome-icon .bar {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+.welcome h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+}
+.welcome p {
+    font-size: 14px;
+    color: var(--text-sec);
+    font-weight: 400;
+}
+
+/* ── Hotkey Card ─────────────────────────────────── */
+.hotkey-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+.hotkey-card .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+.keys {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.key {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-hover);
+    background: var(--surface-2);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+}
+.key-plus {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-weight: 300;
+}
+.hotkey-card .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 14px;
+}
+
+/* ── Steps ───────────────────────────────────────── */
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s;
+}
+.step:hover { border-color: var(--border-hover); }
+.step-num {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.step-text h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.step-text p {
+    font-size: 13px;
+    color: var(--text-sec);
+    font-weight: 400;
+}
+.step-text .shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+.step-text .shortcut .k {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+}
+
+/* ── Status Cards ────────────────────────────────── */
+.status-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.status-card {
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.status-card .sc-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+.status-card .sc-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.status-card .sc-value .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+}
+
+/* ── Footer Links ────────────────────────────────── */
+.dash-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 8px;
+}
+.dash-footer a {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.dash-footer a:hover { color: var(--text-sec); }
+
+/* ── Settings iframe ─────────────────────────────── */
+.settings-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <div class="tab active" data-tab="dashboard">Dashboard</div>
+    <div class="tab" data-tab="settings">Settings</div>
+    <div class="tab-spacer"></div>
+    <div class="tab-status">
+      <div class="dot" id="headerDot"></div>
+      <span id="headerStatus">Connecting...</span>
+    </div>
+  </div>
+
+  <!-- Dashboard tab -->
+  <div class="tab-content active" id="tab-dashboard">
+    <div class="dashboard">
+      <!-- Welcome -->
+      <div class="welcome">
+        <div class="welcome-icon">
+          <div class="bars" id="welcomeBars"></div>
+        </div>
+        <h1>DictateMe</h1>
+        <p>System-wide voice dictation. Local-first. Free. Open source.</p>
+      </div>
+
+      <!-- Hotkey card -->
+      <div class="hotkey-card">
+        <div class="label">Press to dictate</div>
+        <div class="keys">
+          <span class="key">Ctrl</span>
+          <span class="key-plus">+</span>
+          <span class="key">Shift</span>
+          <span class="key-plus">+</span>
+          <span class="key">D</span>
+        </div>
+        <div class="hint">Press again to stop recording. Esc to cancel.</div>
+      </div>
+
+      <!-- Quick steps -->
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <h3>Speak</h3>
+            <p>Press the hotkey and speak naturally. Your voice is transcribed locally.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <h3>Pick a format</h3>
+            <p>Press a number key to reformat your text instantly.</p>
+            <div class="shortcut">
+              <span class="k">1</span> As-is
+              <span class="k">2</span> Formal
+              <span class="k">3</span> Casual
+              <span class="k">4</span> Email
+              <span class="k">5</span> Bullets
+              <span class="k">6</span> Code
+              <span class="k">7</span> AI
+              <span class="k">8</span> Slack
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <h3>Inserted</h3>
+            <p>Text appears at your cursor. Press Enter to insert immediately, or wait for auto-insert.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="status-row">
+        <div class="status-card">
+          <div class="sc-label">Server</div>
+          <div class="sc-value">
+            <div class="dot" id="serverDot" style="background:var(--text-muted)"></div>
+            <span id="serverStatus">Checking...</span>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="sc-label">Speech Model</div>
+          <div class="sc-value">
+            <div class="dot" id="modelDot" style="background:var(--text-muted)"></div>
+            <span id="modelStatus">Checking...</span>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="sc-label">Language</div>
+          <div class="sc-value" id="langValue">Auto-detect</div>
+        </div>
+        <div class="status-card">
+          <div class="sc-label">LLM Cleanup</div>
+          <div class="sc-value" id="llmValue">Checking...</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="dash-footer">
+        <a href="https://github.com/kristerus/dictateme" id="ghLink">GitHub</a>
+        <a href="https://github.com/kristerus/dictateme/issues" id="issuesLink">Report Issue</a>
+        <span style="font-size:12px;color:var(--text-muted)">v0.1.0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings tab (loads settings.html in iframe) -->
+  <div class="tab-content" id="tab-settings">
+    <iframe class="settings-frame" src="settings.html" id="settingsFrame"></iframe>
+  </div>
+</div>
+
+<script>
+(function() {
+  const { invoke } = window.__TAURI__.core;
+  const { listen } = window.__TAURI__.event;
+
+  // ── Tab switching ───────────────────────────────
+  const tabs = document.querySelectorAll('.tab[data-tab]');
+  const panels = document.querySelectorAll('.tab-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      tabs.forEach(t => t.classList.toggle('active', t === tab));
+      panels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + target));
+    });
+  });
+
+  // ── Welcome icon bars ──────────────────────────
+  const barsEl = document.getElementById('welcomeBars');
+  const heights = [8, 14, 22, 28, 20, 13, 7];
+  heights.forEach(h => {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = h + 'px';
+    barsEl.appendChild(bar);
+  });
+
+  // ── Status polling ─────────────────────────────
+  const headerDot = document.getElementById('headerDot');
+  const headerStatus = document.getElementById('headerStatus');
+  const serverDot = document.getElementById('serverDot');
+  const serverStatus = document.getElementById('serverStatus');
+  const modelDot = document.getElementById('modelDot');
+  const modelStatus = document.getElementById('modelStatus');
+  const langValue = document.getElementById('langValue');
+  const llmValue = document.getElementById('llmValue');
+
+  const LANG_NAMES = {
+    auto: 'Auto-detect', en: 'English', de: 'Deutsch', fr: 'Fran\u00e7ais',
+    es: 'Espa\u00f1ol', it: 'Italiano', pt: 'Portugu\u00eas', nl: 'Nederlands',
+    pl: 'Polski', ru: '\u0420\u0443\u0441\u0441\u043a\u0438\u0439', zh: '\u4e2d\u6587',
+    ja: '\u65e5\u672c\u8a9e', ko: '\ud55c\uad6d\uc5b4', sq: 'Shqip',
+    tr: 'T\u00fcrk\u00e7e', sv: 'Svenska', da: 'Dansk', fi: 'Suomi',
+    ar: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629', hi: '\u0939\u093f\u0928\u094d\u0926\u0940'
+  };
+
+  async function checkStatus() {
+    try {
+      const status = await invoke('get_status');
+      // Server
+      serverDot.style.background = 'var(--green)';
+      serverStatus.textContent = 'Connected';
+      headerDot.style.background = 'var(--green)';
+      headerDot.classList.remove('loading', 'error');
+      headerDot.classList.add('ok');
+
+      // Model
+      if (status.model_loaded) {
+        modelDot.style.background = 'var(--green)';
+        modelStatus.textContent = 'Loaded';
+        headerStatus.textContent = 'Ready';
+      } else if (status.model_loading) {
+        modelDot.style.background = 'var(--orange)';
+        modelStatus.textContent = 'Loading...';
+        headerStatus.textContent = 'Model loading...';
+        headerDot.classList.remove('ok');
+        headerDot.classList.add('loading');
+        headerDot.style.background = 'var(--orange)';
+      } else {
+        modelDot.style.background = 'var(--text-muted)';
+        modelStatus.textContent = 'Not loaded';
+        headerStatus.textContent = 'Connected';
+      }
+    } catch (e) {
+      serverDot.style.background = 'var(--red)';
+      serverStatus.textContent = 'Disconnected';
+      modelDot.style.background = 'var(--text-muted)';
+      modelStatus.textContent = 'Unknown';
+      headerDot.style.background = 'var(--red)';
+      headerDot.classList.remove('ok', 'loading');
+      headerDot.classList.add('error');
+      headerStatus.textContent = 'Disconnected';
+    }
+  }
+
+  async function loadConfig() {
+    try {
+      const config = await invoke('get_settings');
+      // Language
+      const lang = config.general && config.general.language || 'auto';
+      langValue.textContent = LANG_NAMES[lang] || lang.toUpperCase();
+
+      // LLM
+      if (config.llm && config.llm.enabled) {
+        const provider = config.llm.provider || 'ollama';
+        llmValue.textContent = provider.charAt(0).toUpperCase() + provider.slice(1);
+      } else {
+        llmValue.innerHTML = '<span style="color:var(--text-muted)">Off</span>';
+      }
+    } catch (e) {
+      langValue.textContent = 'Unknown';
+      llmValue.textContent = 'Unknown';
+    }
+  }
+
+  // ── Sidecar status events ──────────────────────
+  listen('sidecar-status', (event) => {
+    const { status, model_loaded } = event.payload;
+    if (status === 'ready') {
+      serverDot.style.background = 'var(--green)';
+      serverStatus.textContent = 'Connected';
+      if (model_loaded) {
+        modelDot.style.background = 'var(--green)';
+        modelStatus.textContent = 'Loaded';
+        headerDot.style.background = 'var(--green)';
+        headerStatus.textContent = 'Ready';
+      }
+    } else if (status === 'error') {
+      serverDot.style.background = 'var(--red)';
+      serverStatus.textContent = 'Error';
+      headerDot.style.background = 'var(--red)';
+      headerStatus.textContent = 'Error';
+    }
+  });
+
+  // ── External links via shell.open ──────────────
+  document.querySelectorAll('a[href^="https://"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.__TAURI__ && window.__TAURI__.shell) {
+        window.__TAURI__.shell.open(a.href);
+      }
+    });
+  });
+
+  // ── Init ───────────────────────────────────────
+  checkStatus();
+  loadConfig();
+  setInterval(checkStatus, 5000);
+})();
+</script>
+</body>
+</html>

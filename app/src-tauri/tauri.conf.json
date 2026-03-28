@@ -4,10 +4,7 @@
   "version": "0.1.0",
   "identifier": "org.dictateme.app",
   "build": {
-    "frontendDist": "../src",
-    "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
+    "frontendDist": "../src"
   },
   "app": {
     "withGlobalTauri": true,
@@ -27,12 +24,15 @@
         "shadow": false
       },
       {
-        "label": "settings",
-        "title": "DictateMe Settings",
+        "label": "main",
+        "title": "DictateMe",
         "url": "settings.html",
-        "width": 720,
-        "height": 560,
-        "visible": false,
+        "width": 680,
+        "height": 600,
+        "visible": true,
+        "resizable": true,
+        "minWidth": 560,
+        "minHeight": 480,
         "center": true
       }
     ],
@@ -61,9 +61,6 @@
   "plugins": {
     "shell": {
       "open": true
-    },
-    "global-shortcut": {
-      "shortcuts": []
     }
   }
 }

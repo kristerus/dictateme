@@ -1,0 +1,23 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for DictateMe",
+  "windows": ["overlay", "main"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:event:allow-listen",
+    "core:event:allow-emit",
+    "core:window:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-position",
+    "core:window:allow-close",
+    "core:window:allow-cursor-position",
+    "shell:default",
+    "shell:allow-open",
+    "global-shortcut:default",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister"
+  ]
+}

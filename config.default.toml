@@ -2,7 +2,8 @@
 # Copy this to ~/.dictateme/config.toml and customize.
 
 [general]
-language = "en"
+# "auto" = auto-detect language. Or force a specific language: "en", "de", "fr", "es", "ja", etc.
+language = "auto"
 start_minimized = true
 auto_start_with_windows = false
 log_level = "INFO"
@@ -27,9 +28,9 @@ silence_duration_ms = 800
 
 [stt]
 engine = "faster-whisper"
-# Models: tiny.en | small.en | medium.en | large-v3
-# Non-English: tiny | small | medium | large-v3
-model = "small.en"
+# English-only (faster): tiny.en | small.en | medium.en
+# Multilingual: tiny | small | medium | large-v3
+model = "small"
 # "auto" picks CUDA if available, else CPU
 device = "auto"
 # float16 (GPU default) | int8 (smaller/faster) | float32 (CPU default)

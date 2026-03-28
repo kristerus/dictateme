@@ -61,13 +61,18 @@ class FasterWhisperEngine:
         logger.info("Model loaded in %.1fs", elapsed)
 
     def transcribe(
-        self, audio: np.ndarray, sample_rate: int = 16000
+        self,
+        audio: np.ndarray,
+        sample_rate: int = 16000,
+        language: str | None = None,
     ) -> TranscriptionResult:
         """Transcribe audio using faster-whisper.
 
         Args:
             audio: float32 numpy array, mono, [-1.0, 1.0].
             sample_rate: Sample rate (must be 16000 for Whisper).
+            language: Language code (e.g. "en", "de", "ja") to force.
+                      None or "auto" = auto-detect.
 
         Returns:
             TranscriptionResult with text, segments, and metadata.
@@ -77,9 +82,13 @@ class FasterWhisperEngine:
 
         t0 = time.perf_counter()
 
+        # None means auto-detect; "auto" is our config convention
+        lang_hint = language if language and language != "auto" else None
+
         segments_iter, info = self._model.transcribe(
             audio,
             beam_size=self._beam_size,
+            language=lang_hint,
             vad_filter=False,  # We do our own VAD
         )
 

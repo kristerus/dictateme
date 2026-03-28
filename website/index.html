@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DictateMe — Voice Dictation That Lives on Your Machine</title>
-<meta name="description" content="Open-source, local-first voice dictation for Windows. Speak naturally, insert anywhere. No cloud. No subscription. No compromises.">
+<meta name="description" content="Open-source, local-first voice dictation for Windows, macOS, and Linux. Speak naturally, insert anywhere. No cloud. No subscription. No compromises.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -867,6 +869,31 @@ footer {
   font-size: 0.7rem;
   color: var(--text-muted);
 }
+.platform-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+.platform-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+.platform-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 186, 8, 0.05);
+}
 
 /* ─── RESPONSIVE ────────────────────────────────────── */
 @media (max-width: 900px) {
@@ -912,6 +939,7 @@ footer {
       <a href="#features">Features</a>
       <a href="#how-it-works">How It Works</a>
       <a href="#compare">Compare</a>
+      <a href="#llm-setup">LLM Setup</a>
       <a href="#download" class="nav-cta">Download</a>
     </div>
   </div>
@@ -921,11 +949,7 @@ footer {
 <section class="hero">
   <div class="hero-glow" aria-hidden="true"></div>
   <div class="hero-content">
-    <div class="hero-badge reveal">
-      <span class="badge-dot"></span>
-      Open source &middot; Free forever
-    </div>
-    <h1 class="reveal reveal-delay-1">
+    <h1 class="reveal">
       Your voice, your machine,<br><em>your words.</em>
     </h1>
     <p class="hero-sub reveal reveal-delay-2">
@@ -947,7 +971,7 @@ footer {
     </div>
 
     <div class="hero-keystroke reveal reveal-delay-5">
-      Hold <span class="key">Ctrl</span> + <span class="key">Win</span> and speak — text appears wherever your cursor is
+      <span class="key">Ctrl</span> + <span class="key">Shift</span> + <span class="key">D</span> to start &middot; <span class="key">Esc</span> to cancel &middot; text appears wherever your cursor is
     </div>
   </div>
 </section>
@@ -995,7 +1019,17 @@ footer {
         <p>Dictate once, reformat as email, Slack message, bullet points, code comments, or any custom style. One keypress.</p>
       </div>
       <div class="feature-card reveal reveal-delay-3">
-        <div class="feature-icon violet">&#128274;</div>
+        <div class="feature-icon violet">&#127760;</div>
+        <h3>99 Languages</h3>
+        <p>Auto-detects your language or pick one from the dropdown. Speak in English, German, Japanese, Albanian, or any of 99 Whisper-supported languages.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feature-icon amber">&#9000;</div>
+        <h3>Keyboard-First</h3>
+        <p>Press 1-8 to pick a format, Enter to insert, Escape to cancel. No mouse needed. Text goes straight to your cursor in any app.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-5">
+        <div class="feature-icon teal">&#128274;</div>
         <h3>Works Everywhere</h3>
         <p>System-wide insertion via clipboard or SendInput. Works in any app — VS Code, Outlook, Chrome, Slack, terminals, anywhere you type.</p>
       </div>
@@ -1019,7 +1053,7 @@ footer {
         <div class="step-number">1</div>
         <div class="step-visual">&#127908;</div>
         <h3>Speak</h3>
-        <p>Hold <strong>Ctrl+Win</strong> and speak naturally. Voice Activity Detection captures only your speech, ignoring background noise.</p>
+        <p>Hold <strong>Ctrl+Shift+D</strong> and speak naturally. Voice Activity Detection captures only your speech, ignoring background noise.</p>
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-number">2</div>
@@ -1195,9 +1229,14 @@ footer {
           <td class="table-highlight">Ollama, OpenAI, Anthropic, Groq, custom</td>
         </tr>
         <tr>
+          <td>Languages</td>
+          <td>~30</td>
+          <td class="table-highlight"><span class="table-check">&#10003;</span> 99 with auto-detect</td>
+        </tr>
+        <tr>
           <td>Format presets</td>
           <td>Limited</td>
-          <td class="table-highlight">7 built-in + fully customizable</td>
+          <td class="table-highlight">8 built-in + keyboard shortcuts</td>
         </tr>
         <tr>
           <td>Open source</td>
@@ -1207,10 +1246,42 @@ footer {
         <tr>
           <td>Platform</td>
           <td>Mac, Windows, iOS</td>
-          <td class="table-highlight">Windows (macOS coming)</td>
+          <td class="table-highlight">Windows, macOS, Linux</td>
         </tr>
       </tbody>
     </table>
+  </div>
+</section>
+
+<!-- ─── LLM SETUP ──────────────────────────────── -->
+<section class="features" id="llm-setup">
+  <div class="container">
+    <div class="section-label reveal">Connect Your LLM</div>
+    <h2 class="section-title reveal reveal-delay-1">
+      Your brain,<br>your choice of AI.
+    </h2>
+    <p class="section-desc reveal reveal-delay-2">
+      DictateMe uses an LLM to clean up filler words and reformat text.
+      Use a local model for full privacy, or connect a cloud provider for speed.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon teal">&#129302;</div>
+        <h3>Local with Ollama</h3>
+        <p>Install <a href="https://ollama.com" target="_blank" style="color:var(--accent);text-decoration:underline">Ollama</a>, run <code style="font-family:var(--mono);background:var(--bg-elevated);padding:2px 6px;border-radius:4px;font-size:0.85em">ollama pull llama3.2:3b</code>, and you're set. Fully offline, fully private. No API key needed.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon amber">&#128273;</div>
+        <h3>Cloud Providers</h3>
+        <p>Paste your API key in Settings and pick a provider. Supports <strong>OpenAI</strong> (GPT-4o-mini), <strong>Anthropic</strong> (Claude), <strong>Groq</strong> (Llama), or any OpenAI-compatible endpoint.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon coral">&#9940;</div>
+        <h3>Or Skip It Entirely</h3>
+        <p>Don't want LLM cleanup? Turn it off in Settings. You'll get raw Whisper transcription — still great for most use cases, and transcription stays fully local either way.</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1220,25 +1291,48 @@ footer {
     <div class="download-card reveal">
       <div class="section-label">Get Started</div>
       <h2 class="section-title">Ready to dictate?</h2>
-      <p>Download DictateMe, hold Ctrl+Win, and start speaking. It's that simple.</p>
-      <div class="btn-group">
-        <a href="https://github.com/kristerus/dictateme/releases/latest" class="btn-primary">
+      <p>Download for your platform, launch DictateMe, press Ctrl+Shift+D, and start speaking.</p>
+
+      <!-- Primary download button (auto-detected OS) -->
+      <div class="btn-group" id="download-primary">
+        <a id="download-btn" href="#" class="btn-primary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download v0.1.0 for Windows
+          <span id="download-label">Download</span>
+        </a>
+        <a href="https://github.com/kristerus/dictateme" target="_blank" class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z"/></svg>
+          View Source
         </a>
       </div>
+
+      <!-- All platforms -->
+      <div style="margin-top: 32px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <a href="/download/windows" class="platform-btn" id="dl-win">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Windows
+        </a>
+        <a href="/download/macos" class="platform-btn" id="dl-mac">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          macOS
+        </a>
+        <a href="/download/linux" class="platform-btn" id="dl-linux">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.368 1.884 1.43.868.07 1.723-.358 2.1-.87 2.082-.28 3.248-.765 3.59-1.137.165-.18.191-.394.116-.612-.077-.263-.286-.456-.597-.522-.3-.06-.578-.165-.81-.266l-.053-.028c-.97-.558-1.17-.936-1.23-1.18-.043-.163-.046-.378-.016-.678.048-.473.168-1.09.132-1.653-.046-.7-.272-1.36-.628-1.983-.183-.322-.442-.615-.765-.854-.108-.08-.171-.165-.217-.251-.047-.088-.074-.186-.168-.271-.194-.247-.512-.479-.896-.64-.174-.073-.37-.118-.583-.122-.216-.005-.442.043-.665.124-.394.143-.676.393-.82.585-.027.035-.043.035-.066-.028-.023-.05-.023-.167.004-.348s.077-.393.134-.592c.274-.896.779-1.8 1.003-2.447.263-.743.28-1.436.082-2.091-.2-.658-.578-1.27-.987-1.86-.088-.127-.17-.258-.217-.404-.05-.148-.058-.314-.004-.5-.14-.04-.29-.068-.448-.082-.174-.015-.355-.012-.542.016-.538.084-.967.396-1.158.782-.024.05-.043.1-.053.152-.003.015-.003.036-.006.054-.028.293-.065.599-.114.914-.068.446-.16.912-.263 1.387-.098.454-.186.876-.252 1.258a8.15 8.15 0 01-.151.67 5.508 5.508 0 01-.228.634c-.114.269-.2.39-.29.395-.045 0-.116-.07-.22-.254a2.16 2.16 0 01-.195-.526c-.075-.296-.156-.752-.227-1.338-.036-.292-.066-.619-.093-.968-.01-.175-.025-.432-.04-.7-.019-.376-.04-.82-.054-1.216-.028-.672-.04-1.266-.006-1.557.04-.27.047-.573.04-.885-.006-.308-.028-.607-.056-.918-.048-.444-.136-.954-.298-1.402-.155-.444-.393-.864-.74-1.152C13.647.112 13.09 0 12.504 0z"/></svg>
+          Linux
+        </a>
+      </div>
+
       <div class="download-meta">
         <span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
-          Windows 10/11
-        </span>
-        <span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          ~150 MB download
+          v0.1.0
         </span>
         <span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
           MIT License
+        </span>
+        <span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+          Windows &middot; macOS &middot; Linux
         </span>
       </div>
     </div>
@@ -1305,6 +1399,32 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     bar.style.setProperty('--del', (Math.random() * 0.5) + 's');
     container.appendChild(bar);
   }
+})();
+
+// ── OS-aware download button ──────────────────────
+(function() {
+  const ua = navigator.userAgent.toLowerCase();
+  const btn = document.getElementById('download-btn');
+  const label = document.getElementById('download-label');
+  const base = '/download/';
+
+  let os = 'windows';
+  if (ua.includes('mac')) os = 'macos';
+  else if (ua.includes('linux')) os = 'linux';
+
+  const labels = {
+    windows: 'Download for Windows',
+    macos: 'Download for macOS',
+    linux: 'Download for Linux'
+  };
+
+  btn.href = base + os;
+  label.textContent = labels[os];
+
+  // Highlight active platform button
+  const platformId = { windows: 'dl-win', macos: 'dl-mac', linux: 'dl-linux' };
+  const activeBtn = document.getElementById(platformId[os]);
+  if (activeBtn) activeBtn.classList.add('active');
 })();
 
 // ── Smooth nav background on scroll ────────────────
